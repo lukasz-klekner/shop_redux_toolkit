@@ -6,23 +6,30 @@ import Layout from './components/Layout/Layout'
 import Products from './components/Shop/Products'
 import Notification from './components/UI/Notification'
 
-import { sendCartData } from './redux/slices/cartSlice'
+import { sendCartData, fetchCartItems } from './redux/thunk'
 
 let isInitial = true
 
 function App() {
   const { isCartVisible, notification } = useSelector(({ ui }) => ui)
-  const { items } = useSelector(({ cart }) => cart)
+  const { items, changed, totalQuantity } = useSelector(({ cart }) => cart)
 
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(fetchCartItems())
+  }, [])
 
   useEffect(() => {
     if (isInitial) {
       isInitial = false
       return
     }
-    dispatch(sendCartData(items))
-  }, [items])
+
+    if (changed) {
+      dispatch(sendCartData({ items, totalQuantity }))
+    }
+  }, [items, totalQuantity])
 
   return (
     <Layout>

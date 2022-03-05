@@ -1,10 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { showNotification } from './uiSlice'
-
 const initialState = {
   items: [],
   totalQuantity: 0,
+  changed: false,
 }
 
 const cartSlice = createSlice({
@@ -15,6 +14,7 @@ const cartSlice = createSlice({
       const itemToAdd = action.payload
       const existingItem = state.items.find((item) => itemToAdd.id === item.id)
       state.totalQuantity++
+      state.changed = true
 
       if (!existingItem) {
         state.items.push({
@@ -33,6 +33,7 @@ const cartSlice = createSlice({
       const idToRemove = action.payload
       const existingItem = state.items.find((item) => idToRemove === item.id)
       state.totalQuantity--
+      state.changed = true
 
       if (existingItem.quantity === 1) {
         state.items = state.items.filter((item) => item.id !== idToRemove)
@@ -40,52 +41,13 @@ const cartSlice = createSlice({
         existingItem.quantity--
       }
     },
+    replaceCart: (state, action) => {
+      state.totalQuantity = action.payload.totalQuantity
+      state.items = action.payload.items
+    },
   },
 })
 
-export const sendCartData = (cart) => async (dispatch) => {
-  dispatch(
-    showNotification({
-      status: 'pending',
-      title: 'Sending...',
-      message: 'Sending cart data!',
-    })
-  )
-
-  const sendRequest = async () => {
-    const respone = await fetch(
-      'https://shop-redux-b6741-default-rtdb.firebaseio.com/cart.json',
-      {
-        method: 'PUT',
-        body: JSON.stringify(cart),
-      }
-    )
-
-    if (!respone.ok) {
-      throw new Error('Sending cart data failed.')
-    }
-  }
-
-  try {
-    await sendRequest()
-
-    dispatch(
-      showNotification({
-        status: 'success',
-        title: 'Success!',
-        message: 'Sent cart data successfully!',
-      })
-    )
-  } catch (error) {
-    dispatch(
-      showNotification({
-        status: 'error',
-        title: 'Error!',
-        message: 'Sending cart data failed!',
-      })
-    )
-  }
-}
-
-export const { addItemToCart, removeItemFromCart } = cartSlice.actions
+export const { addItemToCart, removeItemFromCart, replaceCart } =
+  cartSlice.actions
 export default cartSlice.reducer
