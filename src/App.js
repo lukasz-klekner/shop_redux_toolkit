@@ -7,7 +7,6 @@ import Products from './components/Shop/Products'
 function App() {
   const { isCartVisible } = useSelector(({ ui }) => ui)
 
-  console.log(isCartVisible)
   return (
     <Layout>
       {isCartVisible && <Cart />}
